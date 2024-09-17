@@ -5,9 +5,11 @@ from flask_gravatar import Gravatar
 from flask_login import UserMixin, login_user, LoginManager, current_user, logout_user, login_required
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import relationship, DeclarativeBase, Mapped, mapped_column
-from sqlalchemy import Integer, String, Text, ForeignKey
+from sqlalchemy import Integer, String, Text, ForeignKey, create_engine
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
+from sqlalchemy.exc import OperationalError
+import logging
 # Import your forms from the forms.py
 from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm
 import os
@@ -46,7 +48,29 @@ login_manager.init_app(app)
 # CREATE DATABASE
 class Base(DeclarativeBase):
     pass
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DB_URI", "sqlite:///posts.db")
+# app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DB_URI", "sqlite:///posts.db")
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+db_uri = os.environ.get("DB_URI", "sqlite:///posts.db")
+logger.debug(f"Attempting to connect to database with URI: {db_uri}")
+
+
+
+# Test the database connection
+try:
+    engine = create_engine(db_uri)
+    connection = engine.connect()
+    connection.close()
+    logger.info("Successfully connected to the database")
+except OperationalError as e:
+    logger.error(f"Could not connect to the database: {str(e)}")
+    # You might want to fall back to SQLite here
+    db_uri = "sqlite:///posts.db"
+    logger.info("Falling back to SQLite database")
+
+app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
 db = SQLAlchemy(model_class=Base)
 db.init_app(app)
 
