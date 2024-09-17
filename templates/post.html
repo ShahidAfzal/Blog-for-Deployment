@@ -49,9 +49,6 @@
 
         <!-- Comments Area -->
         <!-- Load the CKEditor -->
-        {{ ckeditor.load() }}
-        <!-- Configure it with the name of the form field from CommentForm -->
-        {{ ckeditor.config(name='comment_text') }}
         <!-- Create the comment form from CommentForm -->
         {% from "bootstrap5/form.html" import render_form %}
         {{ render_form(form, novalidate=True, button_map={"submit": "primary"}) }}
