@@ -11,6 +11,11 @@ from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 # Import your forms from the forms.py
 from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm
+import os
+from dotenv import load_dotenv
+
+
+load_dotenv("secrets.env")
 
 def admin_only(f):
     @wraps(f)
@@ -23,7 +28,7 @@ def admin_only(f):
     return decorated_function
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
+app.config['SECRET_KEY'] = os.environ.get("FLASK_KEY")
 ckeditor = CKEditor(app)
 Bootstrap5(app)
 
@@ -43,7 +48,7 @@ login_manager.init_app(app)
 # CREATE DATABASE
 class Base(DeclarativeBase):
     pass
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///posts.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DB_URI", "sqlite:///posts.db")
 db = SQLAlchemy(model_class=Base)
 db.init_app(app)
 
@@ -272,4 +277,4 @@ def contact():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    app.run(debug=False)
